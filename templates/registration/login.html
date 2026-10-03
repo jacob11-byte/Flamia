@@ -1,0 +1,1 @@
+{% extends 'base.html' %}{% block content %}<div class="login card"><div class="logo">F</div><h1>Bienvenido a Flamia</h1><p>Rutas, entregas y cobros aun sin conexión.</p><form method="post">{% csrf_token %}{{ form.as_p }}<button class="btn primary full">Ingresar</button></form><small>Solicita tus credenciales al administrador.</small></div>{% endblock %}
