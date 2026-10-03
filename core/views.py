@@ -1,5 +1,6 @@
 import json, uuid
 from decimal import Decimal, InvalidOperation
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
@@ -49,7 +50,7 @@ def model_edit(request, form_cls, model, pk, title, redirect_name):
     obj=get_object_or_404(model,pk=pk) if pk else None; form=form_cls(request.POST or None,instance=obj)
     if form.is_valid():
         obj=form.save(); audit(request.user,model.__name__,obj.pk,"actualizado" if pk else "creado"); messages.success(request,"Información guardada."); return redirect(redirect_name)
-    return render(request,"core/form.html",{"form":form,"title":title,"object":obj})
+    return render(request,"core/form.html",{"form":form,"title":title,"object":obj,"is_customer":model is Customer,"google_maps_api_key":settings.GOOGLE_MAPS_API_KEY})
 
 @login_required
 def order_list(request): return render(request,"core/order_list.html",{"orders":Order.objects.select_related("customer").prefetch_related("items","payments")})
@@ -96,6 +97,17 @@ def reports(request):
     orders=Order.objects.select_related("customer").prefetch_related("items","payments"); return render(request,"core/reports.html",{"sales":sum((o.total for o in orders),Decimal("0")),"collected":Payment.objects.aggregate(v=Sum("amount"))["v"] or 0,"receivable":sum((o.balance for o in orders),Decimal("0")),"delivered":orders.filter(status="DELIVERED").count(),"failed":orders.filter(status="FAILED").count(),"debtors":[o for o in orders if o.balance>0],"routes":Route.objects.annotate(total=Count("visits"),done=Count("visits",filter=Q(visits__status="DELIVERED")))[:20]})
 @login_required
 def offline(request): return render(request,"core/offline.html")
+
+@login_required
+def map_view(request):
+    return render(request, "core/map.html", {"google_maps_api_key": settings.GOOGLE_MAPS_API_KEY})
+
+@login_required
+def api_map_data(request):
+    routes = Route.objects.select_related("driver", "vehicle").prefetch_related("visits__order__customer")
+    if role(request.user) == "DRIVER": routes = routes.filter(driver=request.user)
+    customers = Customer.objects.filter(active=True, latitude__isnull=False, longitude__isnull=False)
+    return JsonResponse({"customers": [{"id": c.id, "name": c.name, "phone": c.phone, "address": c.address, "reference": c.reference, "zone": c.zone, "lat": float(c.latitude), "lng": float(c.longitude)} for c in customers], "routes": [{"id": r.id, "name": r.name, "date": str(r.date), "status": r.get_status_display(), "driver": r.driver.get_full_name() or r.driver.username, "vehicle": str(r.vehicle) if r.vehicle else "Sin vehículo", "stops": [{"visit_id": v.id, "sequence": v.sequence, "customer": v.order.customer.name, "address": v.order.customer.address, "lat": float(v.order.customer.latitude), "lng": float(v.order.customer.longitude)} for v in r.visits.all() if v.order.customer.latitude is not None and v.order.customer.longitude is not None]} for r in routes]})
 
 @login_required
 def api_bootstrap(request):

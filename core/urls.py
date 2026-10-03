@@ -10,5 +10,6 @@ urlpatterns = [
     path("rutas/", views.route_list, name="route_list"), path("rutas/nueva/", views.route_edit, name="route_create"), path("rutas/<int:pk>/", views.route_detail, name="route_detail"), path("rutas/<int:pk>/editar/", views.route_edit, name="route_edit"),
     path("cobros/", views.payment_list, name="payment_list"), path("cobros/nuevo/", views.payment_create, name="payment_create"),
     path("reportes/", views.reports, name="reports"), path("offline/", views.offline, name="offline"),
+    path("mapa/", views.map_view, name="map"), path("api/mapa/", views.api_map_data, name="api_map_data"),
     path("api/bootstrap/", views.api_bootstrap, name="api_bootstrap"), path("api/sync/", views.api_sync, name="api_sync"),
 ]

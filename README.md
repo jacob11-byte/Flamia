@@ -12,6 +12,7 @@ Sistema web *offline-first* para gestionar rutas, entregas y cobros de negocios 
 - Cobros al contado, abonos, saldos e historial por cliente.
 - Reportes de ventas, cobros, cuentas pendientes, entregas y rendimiento.
 - PWA responsive con caché, IndexedDB, rutas precargadas, cola local e idempotencia de cobros.
+- Google Maps JavaScript API con clientes, Directions por carretera, tráfico, GPS real y simulación de vehículo.
 
 ## Instalación
 
@@ -25,6 +26,8 @@ python manage.py runserver
 ```
 
 Abra `http://127.0.0.1:8000`. Datos ficticios de demostración:
+
+Configure `GOOGLE_MAPS_API_KEY` con una clave que tenga habilitadas Maps JavaScript API, Directions API, Places API y Geocoding API.
 
 - Administrador: `admin` / `Flamia2026!`
 - Repartidor: `repartidor` / `Ruta2026!`

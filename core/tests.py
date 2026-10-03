@@ -25,5 +25,7 @@ class FlamiaTests(TestCase):
     def test_visit_sync_updates_trace(self):
         self.client.login(username="driver",password="test12345");body={"operations":[{"id":str(uuid.uuid4()),"type":"visit","data":{"visit_id":self.visit.id,"status":"DELIVERED","observation":"Entregado"}}]}
         self.client.post(reverse("api_sync"),data=json.dumps(body),content_type="application/json");self.visit.refresh_from_db();self.order.refresh_from_db();self.assertEqual(self.visit.status,"DELIVERED");self.assertEqual(self.order.status,"DELIVERED")
+    def test_map_api_only_returns_geolocated_customers(self):
+        self.customer.latitude=14.63;self.customer.longitude=-90.51;self.customer.save();self.client.login(username="manager",password="test12345");data=self.client.get(reverse("api_map_data")).json();self.assertEqual(len(data["customers"]),1);self.assertEqual(data["customers"][0]["name"],"Cliente")
 
 # Create your tests here.
